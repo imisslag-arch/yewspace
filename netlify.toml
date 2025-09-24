@@ -1,0 +1,9 @@
+# 最简单的 Netlify 配置
+[build]
+  publish = "."
+
+# 重定向规则
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

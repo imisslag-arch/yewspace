@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📷 相机租赁管理系统 - 移动版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .page {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            min-height: 70vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .calendar-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .calendar-nav:hover {
+            background: #5a6fd8;
+        }
+
+        .month-year {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .weekday {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .day:hover {
+            background: #e3f2fd;
+            transform: scale(1.05);
+        }
+
+        .day.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .day.today {
+            background: #ffeb3b;
+            color: #333;
+        }
+
+        .day.other-month {
+            color: #ccc;
+        }
+
+        .day.has-order {
+            background: #4caf50;
+            color: white;
+        }
+
+        .day.has-order::after {
+            content: '●';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 8px;
+        }
+
+        .rental-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-time {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .task-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .task-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .task-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .task-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .task-detail {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .task-detail strong {
+            color: #495057;
+            margin-bottom: 2px;
+        }
+
+        .task-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-task {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-complete {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #218838;
+        }
+
+        .btn-call {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-call:hover {
+            background: #138496;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .orders-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .orders-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-picked_up { background: #cce5ff; color: #004085; }
+        .status-returned { background: #d1ecf1; color: #0c5460; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+
+        .no-tasks {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-tab {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .rental-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .orders-table {
+                font-size: 0.8em;
+            }
+            
+            .orders-table th,
+            .orders-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📷 相机租赁管理系统</h1>
+            <p>移动端优化版本 - 随时随地管理您的相机租赁业务</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showPage('booking')">预订系统</button>
+            <button class="nav-tab" onclick="showPage('daily-tasks')">每日任务</button>
+            <button class="nav-tab" onclick="showPage('orders')">订单管理</button>
+            <button class="nav-tab" onclick="showPage('cameras')">相机管理</button>
+        </div>
+
+        <!-- 预订页面 -->
+        <div id="booking-page" class="page active">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="calendar-nav" onclick="previousMonth()">‹</button>
+                    <div class="month-year" id="month-year"></div>
+                    <button class="calendar-nav" onclick="nextMonth()">›</button>
+                </div>
+                <div class="weekdays">
+                    <div class="weekday">周一</div>
+                    <div class="weekday">周二</div>
+                    <div class="weekday">周三</div>
+                    <div class="weekday">周四</div>
+                    <div class="weekday">周五</div>
+                    <div class="weekday">周六</div>
+                    <div class="weekday">周日</div>
+                </div>
+                <div class="days" id="calendar-days"></div>
+            </div>
+
+            <form id="booking-form">
+                <div class="rental-info">
+                    <div>
+                        <h3>客户信息</h3>
+                        <div class="form-group">
+                            <label>客户姓名</label>
+                            <input type="text" id="customer-name" placeholder="输入客户姓名" required>
+                        </div>
+                        <div class="form-group">
+                            <label>客户电话</label>
+                            <input type="tel" id="customer-phone" placeholder="输入客户电话" required>
+                        </div>
+                        <div class="form-group">
+                            <label>取机地点</label>
+                            <select id="pickup-location" onchange="toggleCustomAddress()">
+                                <option value="KL">吉隆坡 (KL)</option>
+                                <option value="JB">新山 (JB)</option>
+                                <option value="custom">自取 - 自定义地址</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="custom-address-group" style="display: none;">
+                            <label>自取地址</label>
+                            <textarea id="custom-address" placeholder="请输入详细地址"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3>租赁信息</h3>
+                        <div class="form-group">
+                            <label>取机日期</label>
+                            <input type="date" id="pickup-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>还机日期</label>
+                            <input type="date" id="return-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>取机时间</label>
+                            <input type="time" id="pickup-time" value="10:00">
+                        </div>
+                        <div class="form-group">
+                            <label>还机时间</label>
+                            <input type="time" id="return-time" value="18:00">
+                        </div>
+                        <div class="form-group">
+                            <label>日租金 (RM)</label>
+                            <input type="number" id="daily-rate" placeholder="输入日租金" required>
+                        </div>
+                        <div class="form-group">
+                            <label>押金 (RM)</label>
+                            <input type="number" id="deposit" placeholder="输入押金" required>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="insurance-checkbox" onchange="toggleInsurance()">
+                                购买保险 (RM5/天)
+                            </label>
+                            <input type="number" id="insurance-fee" value="0" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn" onclick="createOrder()">创建订单</button>
+            </form>
+        </div>
+
+        <!-- 每日任务页面 -->
+        <div id="daily-tasks-page" class="page">
+            <div class="summary-card">
+                <h3>今日概览</h3>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="today-pickups">0</span>
+                        <span class="stat-label">取机任务</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="today-returns">0</span>
+                        <span class="stat-label">归还任务</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="today-total">0</span>
+                        <span class="stat-label">总任务数</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                <div>
+                    <h3><i class="fas fa-arrow-up" style="color: #28a745;"></i> 今日取机任务</h3>
+                    <div id="pickup-tasks" class="task-list">
+                        <div class="no-tasks">今日无取机任务</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3><i class="fas fa-arrow-down" style="color: #ffc107;"></i> 今日归还任务</h3>
+                    <div id="return-tasks" class="task-list">
+                        <div class="no-tasks">今日无归还任务</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单管理页面 -->
+        <div id="orders-page" class="page">
+            <h2>所有订单</h2>
+            <div id="orders-loading" class="loading">加载中...</div>
+            <table class="orders-table" id="orders-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>订单号</th>
+                        <th>客户姓名</th>
+                        <th>取机日期</th>
+                        <th>还机日期</th>
+                        <th>地点</th>
+                        <th>押金</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 相机管理页面 -->
+        <div id="cameras-page" class="page">
+            <h2>相机管理</h2>
+            <button class="btn" onclick="showAddCameraForm()" style="width: auto; margin-bottom: 20px;">添加相机</button>
+            
+            <div id="add-camera-form" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3>添加新相机</h3>
+                <div class="form-group">
+                    <label>相机型号</label>
+                    <input type="text" id="camera-model" placeholder="输入相机型号">
+                </div>
+                <div class="form-group">
+                    <label>品牌</label>
+                    <input type="text" id="camera-brand" placeholder="输入品牌">
+                </div>
+                <div class="form-group">
+                    <label>日租金 (RM)</label>
+                    <input type="number" id="camera-daily-rate" placeholder="输入日租金">
+                </div>
+                <div class="form-group">
+                    <label>押金 (RM)</label>
+                    <input type="number" id="camera-deposit" placeholder="输入押金">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" onclick="addCamera()" style="width: auto;">添加</button>
+                    <button class="btn" onclick="hideAddCameraForm()" style="width: auto; background: #6c757d;">取消</button>
+                </div>
+            </div>
+
+            <div id="cameras-list">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentDate = new Date();
+        let orders = JSON.parse(localStorage.getItem('cameraRentalOrders') || '[]');
+        let cameras = JSON.parse(localStorage.getItem('cameraRentalCameras') || '[]');
+        let orderCounter = parseInt(localStorage.getItem('cameraRentalOrderCounter') || '1000');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCalendar();
+            loadDailyTasks();
+            loadOrders();
+            loadCameras();
+            setupDefaultDates();
+        });
+
+        // 日历功能
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+            
+            document.getElementById('month-year').textContent = `${year}年 ${monthNames[month]}`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const firstDayOfWeek = (firstDay.getDay() + 6) % 7; // 周一为0
+            
+            const daysContainer = document.getElementById('calendar-days');
+            daysContainer.innerHTML = '';
+            
+            // 上个月的日期
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const day = new Date(year, month, -i);
+                const dayElement = createDayElement(day, true);
+                daysContainer.appendChild(dayElement);
+            }
+            
+            // 当前月的日期
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const date = new Date(year, month, day);
+                const dayElement = createDayElement(date, false);
+                daysContainer.appendChild(dayElement);
+            }
+            
+            // 下个月的日期
+            const remainingDays = 42 - (firstDayOfWeek + lastDay.getDate());
+            for (let day = 1; day <= remainingDays; day++) {
+                const date = new Date(year, month + 1, day);
+                const dayElement = createDayElement(date, true);
+                daysContainer.appendChild(dayElement);
+            }
+        }
+
+        function createDayElement(date, isOtherMonth) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            dayElement.textContent = date.getDate();
+            
+            if (isOtherMonth) {
+                dayElement.classList.add('other-month');
+            }
+            
+            const today = new Date();
+            if (date.toDateString() === today.toDateString()) {
+                dayElement.classList.add('today');
+            }
+            
+            // 检查是否有订单
+            const dateStr = date.toISOString().split('T')[0];
+            const hasOrder = orders.some(order => 
+                order.pickupDate === dateStr || order.returnDate === dateStr
+            );
+            
+            if (hasOrder) {
+                dayElement.classList.add('has-order');
+            }
+            
+            dayElement.onclick = () => selectDate(date);
+            
+            return dayElement;
+        }
+
+        function selectDate(date) {
+            // 清除之前的选择
+            document.querySelectorAll('.day.selected').forEach(day => {
+                day.classList.remove('selected');
+            });
+            
+            // 选择当前日期
+            event.target.classList.add('selected');
+            
+            // 自动填充日期
+            const dateStr = date.toISOString().split('T')[0];
+            document.getElementById('pickup-date').value = dateStr;
+            
+            // 自动设置还机日期为3天后
+            const returnDate = new Date(date);
+            returnDate.setDate(date.getDate() + 3);
+            document.getElementById('return-date').value = returnDate.toISOString().split('T')[0];
+            
+            calculateTotal();
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        // 表单功能
+        function setupDefaultDates() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            
+            document.getElementById('pickup-date').value = today.toISOString().split('T')[0];
+            document.getElementById('return-date').value = tomorrow.toISOString().split('T')[0];
+        }
+
+        function toggleCustomAddress() {
+            const locationSelect = document.getElementById('pickup-location');
+            const customAddressGroup = document.getElementById('custom-address-group');
+            
+            if (locationSelect.value === 'custom') {
+                customAddressGroup.style.display = 'block';
+            } else {
+                customAddressGroup.style.display = 'none';
+            }
+        }
+
+        function toggleInsurance() {
+            const checkbox = document.getElementById('insurance-checkbox');
+            const insuranceInput = document.getElementById('insurance-fee');
+            const pickupDate = new Date(document.getElementById('pickup-date').value);
+            const returnDate = new Date(document.getElementById('return-date').value);
+            
+            if (checkbox.checked && pickupDate && returnDate) {
+                const days = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+                insuranceInput.value = days * 5;
+            } else {
+                insuranceInput.value = 0;
+            }
+        }
+
+        function calculateTotal() {
+            const pickupDate = new Date(document.getElementById('pickup-date').value);
+            const returnDate = new Date(document.getElementById('return-date').value);
+            const dailyRate = parseFloat(document.getElementById('daily-rate').value) || 0;
+            const deposit = parseFloat(document.getElementById('deposit').value) || 0;
+            
+            if (pickupDate && returnDate && dailyRate > 0) {
+                const days = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+                const total = (dailyRate * days) + deposit;
+                
+                // 更新保险费用
+                toggleInsurance();
+            }
+        }
+
+        // 订单管理
+        function createOrder() {
+            const customerName = document.getElementById('customer-name').value.trim();
+            const customerPhone = document.getElementById('customer-phone').value.trim();
+            const pickupDate = document.getElementById('pickup-date').value;
+            const returnDate = document.getElementById('return-date').value;
+            const pickupLocation = document.getElementById('pickup-location').value;
+            const customAddress = document.getElementById('custom-address').value.trim();
+            const dailyRate = parseFloat(document.getElementById('daily-rate').value);
+            const deposit = parseFloat(document.getElementById('deposit').value);
+            
+            // 验证
+            if (!customerName || !customerPhone || !pickupDate || !returnDate || !dailyRate || !deposit) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            if (pickupLocation === 'custom' && !customAddress) {
+                alert('请填写自取地址');
+                return;
+            }
+            
+            const pickup = new Date(pickupDate);
+            const returnD = new Date(returnDate);
+            if (returnD <= pickup) {
+                alert('还机日期必须晚于取机日期');
+                return;
+            }
+
+            // 检查租期重叠
+            const hasOverlap = orders.some(order => {
+                const existingPickup = new Date(order.pickupDate);
+                const existingReturn = new Date(order.returnDate);
+                return (pickup <= existingReturn && returnD >= existingPickup);
+            });
+
+            if (hasOverlap) {
+                alert('❌ 租期冲突！请选择其他日期。');
+                return;
+            }
+
+            // 构建地点信息
+            let locationInfo = '';
+            if (pickupLocation === 'KL') {
+                locationInfo = '吉隆坡 (KL)';
+            } else if (pickupLocation === 'JB') {
+                locationInfo = '新山 (JB)';
+            } else if (pickupLocation === 'custom') {
+                locationInfo = `自取 - ${customAddress}`;
+            }
+
+            // 创建订单
+            const order = {
+                id: orderCounter++,
+                orderNumber: `CR${orderCounter.toString().padStart(4, '0')}`,
+                customerName: customerName,
+                customerPhone: customerPhone,
+                pickupDate: pickupDate,
+                returnDate: returnDate,
+                pickupTime: document.getElementById('pickup-time').value,
+                returnTime: document.getElementById('return-time').value,
+                pickupLocation: locationInfo,
+                dailyRate: dailyRate,
+                deposit: deposit,
+                insuranceFee: parseFloat(document.getElementById('insurance-fee').value) || 0,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            orders.push(order);
+            saveData();
+            
+            alert(`订单创建成功！\n订单号: ${order.orderNumber}`);
+            resetForm();
+            loadDailyTasks();
+            loadOrders();
+        }
+
+        function resetForm() {
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-phone').value = '';
+            document.getElementById('pickup-location').value = 'KL';
+            document.getElementById('custom-address').value = '';
+            document.getElementById('custom-address-group').style.display = 'none';
+            document.getElementById('daily-rate').value = '';
+            document.getElementById('deposit').value = '';
+            document.getElementById('insurance-checkbox').checked = false;
+            document.getElementById('insurance-fee').value = '0';
+            setupDefaultDates();
+        }
+
+        // 每日任务
+        function loadDailyTasks() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            const pickupTasks = orders.filter(order => 
+                order.pickupDate === today && order.status === 'pending'
+            );
+
+            const returnTasks = orders.filter(order => 
+                order.returnDate === today && ['confirmed', 'picked_up'].includes(order.status)
+            );
+
+            document.getElementById('today-pickups').textContent = pickupTasks.length;
+            document.getElementById('today-returns').textContent = returnTasks.length;
+            document.getElementById('today-total').textContent = pickupTasks.length + returnTasks.length;
+
+            renderPickupTasks(pickupTasks);
+            renderReturnTasks(returnTasks);
+        }
+
+        function renderPickupTasks(tasks) {
+            const container = document.getElementById('pickup-tasks');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="no-tasks">今日无取机任务</div>';
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="task-time">${task.pickupTime || '10:00'}</span>
+                        <span class="task-status pending">待取机</span>
+                    </div>
+                    <div class="task-details">
+                        <div class="task-detail">
+                            <strong>订单号:</strong> ${task.orderNumber}
+                        </div>
+                        <div class="task-detail">
+                            <strong>客户:</strong> ${task.customerName}
+                        </div>
+                        <div class="task-detail">
+                            <strong>地点:</strong> ${task.pickupLocation || '-'}
+                        </div>
+                        <div class="task-detail">
+                            <strong>电话:</strong> ${task.customerPhone}
+                        </div>
+                        <div class="task-detail">
+                            <strong>押金:</strong> RM ${task.deposit.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-task btn-complete" onclick="completePickup(${task.id})">
+                            <i class="fas fa-check"></i> 完成取机
+                        </button>
+                        <button class="btn-task btn-call" onclick="callCustomer('${task.customerPhone}')">
+                            <i class="fas fa-phone"></i> 联系客户
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderReturnTasks(tasks) {
+            const container = document.getElementById('return-tasks');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="no-tasks">今日无归还任务</div>';
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="task-time">${task.returnTime || '18:00'}</span>
+                        <span class="task-status pending">待归还</span>
+                    </div>
+                    <div class="task-details">
+                        <div class="task-detail">
+                            <strong>订单号:</strong> ${task.orderNumber}
+                        </div>
+                        <div class="task-detail">
+                            <strong>客户:</strong> ${task.customerName}
+                        </div>
+                        <div class="task-detail">
+                            <strong>地点:</strong> ${task.pickupLocation || '-'}
+                        </div>
+                        <div class="task-detail">
+                            <strong>电话:</strong> ${task.customerPhone}
+                        </div>
+                        <div class="task-detail">
+                            <strong>押金:</strong> RM ${task.deposit.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-task btn-complete" onclick="completeReturn(${task.id})">
+                            <i class="fas fa-check"></i> 完成归还
+                        </button>
+                        <button class="btn-task btn-call" onclick="callCustomer('${task.customerPhone}')">
+                            <i class="fas fa-phone"></i> 联系客户
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function completePickup(orderId) {
+            if (confirm('确认完成取机？')) {
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = 'picked_up';
+                    saveData();
+                    loadDailyTasks();
+                    loadOrders();
+                    alert('取机完成！');
+                }
+            }
+        }
+
+        function completeReturn(orderId) {
+            if (confirm('确认完成归还？')) {
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = 'returned';
+                    saveData();
+                    loadDailyTasks();
+                    loadOrders();
+                    alert('归还完成！');
+                }
+            }
+        }
+
+        function callCustomer(phone) {
+            if (confirm(`是否要拨打客户电话: ${phone}？`)) {
+                window.open(`tel:${phone}`);
+            }
+        }
+
+        // 订单管理
+        function loadOrders() {
+            const tbody = document.getElementById('orders-tbody');
+            const table = document.getElementById('orders-table');
+            const loading = document.getElementById('orders-loading');
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">暂无订单</td></tr>';
+            } else {
+                tbody.innerHTML = orders.map(order => `
+                    <tr>
+                        <td>${order.orderNumber}</td>
+                        <td>${order.customerName}</td>
+                        <td>${order.pickupDate}</td>
+                        <td>${order.returnDate}</td>
+                        <td>${order.pickupLocation || '-'}</td>
+                        <td>RM ${order.deposit.toFixed(2)}</td>
+                        <td><span class="status-badge status-${order.status}">${getStatusText(order.status)}</span></td>
+                        <td>
+                            <button class="btn-task btn-complete" onclick="updateOrderStatus(${order.id}, 'confirmed')" ${order.status !== 'pending' ? 'disabled' : ''}>确认</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+            loading.style.display = 'none';
+            table.style.display = 'table';
+        }
+
+        function updateOrderStatus(orderId, status) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = status;
+                saveData();
+                loadOrders();
+                loadDailyTasks();
+            }
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待确认',
+                'confirmed': '已确认',
+                'picked_up': '已取机',
+                'returned': '已归还',
+                'cancelled': '已取消'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 相机管理
+        function loadCameras() {
+            const container = document.getElementById('cameras-list');
+            
+            if (cameras.length === 0) {
+                container.innerHTML = '<div class="no-tasks">暂无相机数据</div>';
+                return;
+            }
+
+            container.innerHTML = cameras.map(camera => `
+                <div class="task-item">
+                    <div class="task-details">
+                        <div class="task-detail">
+                            <strong>型号:</strong> ${camera.model}
+                        </div>
+                        <div class="task-detail">
+                            <strong>品牌:</strong> ${camera.brand}
+                        </div>
+                        <div class="task-detail">
+                            <strong>日租金:</strong> RM ${camera.dailyRate.toFixed(2)}
+                        </div>
+                        <div class="task-detail">
+                            <strong>押金:</strong> RM ${camera.deposit.toFixed(2)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddCameraForm() {
+            document.getElementById('add-camera-form').style.display = 'block';
+        }
+
+        function hideAddCameraForm() {
+            document.getElementById('add-camera-form').style.display = 'none';
+            document.getElementById('camera-model').value = '';
+            document.getElementById('camera-brand').value = '';
+            document.getElementById('camera-daily-rate').value = '';
+            document.getElementById('camera-deposit').value = '';
+        }
+
+        function addCamera() {
+            const model = document.getElementById('camera-model').value.trim();
+            const brand = document.getElementById('camera-brand').value.trim();
+            const dailyRate = parseFloat(document.getElementById('camera-daily-rate').value);
+            const deposit = parseFloat(document.getElementById('camera-deposit').value);
+
+            if (!model || !brand || !dailyRate || !deposit) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            const camera = {
+                id: Date.now(),
+                model: model,
+                brand: brand,
+                dailyRate: dailyRate,
+                deposit: deposit,
+                status: 'available',
+                createdAt: new Date().toISOString()
+            };
+
+            cameras.push(camera);
+            saveData();
+            loadCameras();
+            hideAddCameraForm();
+            alert('相机添加成功！');
+        }
+
+        // 页面切换
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(pageId + '-page').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (pageId === 'daily-tasks') {
+                loadDailyTasks();
+            } else if (pageId === 'orders') {
+                loadOrders();
+            } else if (pageId === 'cameras') {
+                loadCameras();
+            }
+        }
+
+        // 数据存储
+        function saveData() {
+            localStorage.setItem('cameraRentalOrders', JSON.stringify(orders));
+            localStorage.setItem('cameraRentalCameras', JSON.stringify(cameras));
+            localStorage.setItem('cameraRentalOrderCounter', orderCounter.toString());
+        }
+
+        // 绑定事件
+        document.getElementById('pickup-date').addEventListener('change', calculateTotal);
+        document.getElementById('return-date').addEventListener('change', calculateTotal);
+        document.getElementById('daily-rate').addEventListener('input', calculateTotal);
+        document.getElementById('deposit').addEventListener('input', calculateTotal);
+    </script>
+</body>
+</html>

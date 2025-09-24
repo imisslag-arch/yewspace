@@ -1,2 +1,2 @@
-# yewspace
-camera rental system
+# camera-rental-mvp
+
